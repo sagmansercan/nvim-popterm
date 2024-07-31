@@ -40,9 +40,16 @@ function M.toggle_term()
         -- Otherwise, create a new terminal buffer
         local bufnr = vim.api.nvim_create_buf(false, true)
 
+        local cwd = vim.fn.getcwd()
+        local dir_name = vim.fn.fnamemodify(cwd, ':t')
+        local parent_dir_name = vim.fn.fnamemodify(vim.fn.fnamemodify(cwd, ':h'), ':t')
+
+        -- create session name by concatenating parent directory name and current directory name
+        local session_name = parent_dir_name .. "_" .. dir_name
+
         -- Start a new tmux session or attach to an existing one
         vim.api.nvim_buf_call(bufnr, function()
-            vim.cmd('terminal tmux new-session -A -s nvim')
+            vim.cmd('terminal tmux new-session -A -s ' .. session_name)
             vim.cmd('normal a')
         end)
 
