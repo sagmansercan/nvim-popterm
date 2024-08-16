@@ -15,6 +15,7 @@ end
 
 -- Store the window ID of the terminal
 local win_id = nil
+local bufnr = nil
 -- Get the dimensions of the screen
 local width = vim.api.nvim_get_option 'columns'
 local height = vim.api.nvim_get_option 'lines'
@@ -32,13 +33,27 @@ function M.toggle_term()
         -- If the window is currently visible, hide it
         if vim.fn.pumvisible() == 0 and vim.fn.winnr '$' > 1 then
             vim.api.nvim_win_hide(win_id)
+            if bufnr and vim.api.nvim_buf_is_valid(bufnr) then
+                vim.api.nvim_buf_delete(bufnr, { force = true })
+            end
         else
             -- If the window is currently hidden, make it visible
-            vim.api.nvim_win_set_buf(0, win_id)
+            -- and use a throwaway buffer
+            if not bufnr then
+                bufnr = vim.api.nvim_create_buf(false, true)
+            end
+            vim.api.nvim_win_set_buf(win_id, bufnr)
         end
     else
         -- Otherwise, create a new terminal buffer
-        local bufnr = vim.api.nvim_create_buf(false, true)
+        -- check if bufnr is valid
+        if not bufnr then
+            bufnr = vim.api.nvim_create_buf(false, true)
+        else
+            if not vim.api.nvim_buf_is_valid(bufnr) then
+                bufnr = vim.api.nvim_create_buf(false, true)
+            end
+        end
 
         local cwd = vim.fn.getcwd()
         local dir_name = vim.fn.fnamemodify(cwd, ':t')
