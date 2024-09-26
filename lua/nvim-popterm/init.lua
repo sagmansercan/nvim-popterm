@@ -75,7 +75,8 @@ function M.toggle_term()
             height = win_height,
             row = row,
             col = col,
-            border = 'single',
+            border = 'rounded',
+            style = 'minimal',
         })
     end
 end
